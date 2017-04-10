@@ -33,9 +33,7 @@ public final class OpenMovieJsonUtils {
     public static ArrayList<Film> getArrayListFromJson(String moviesJsonResult)
             throws JSONException {
 
-        /* Weather information. Each day's forecast info is an element of the "list" array */
         final String LIST = "results";
-
 
         final String TITLE = "title";
         final String OVERVIEW = "overview";
