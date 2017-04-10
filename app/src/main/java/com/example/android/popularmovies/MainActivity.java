@@ -1,26 +1,26 @@
 package com.example.android.popularmovies;
 
+import android.content.res.Resources;
+import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
+import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.example.android.popularmovies.utilities.OpenMovieJsonUtils;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.net.URL;
-import java.sql.Array;
-import java.util.Arrays;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-
-    TextView mSearchResultsTextView;
 
     String selectedOption = NetworkUtils.SORT_BY_POPULAR_MOVIE;
 
@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
          */
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
-//        mSearchResultsTextView = (TextView) findViewById(R.id.tv_search_results_json);
         /*
          * Using findViewById, we get a reference to our RecyclerView from xml. This allows us to
          * do things like set the adapter of the RecyclerView and toggle the visibility.
@@ -60,10 +59,13 @@ public class MainActivity extends AppCompatActivity {
          * parameter is useful mostly for HORIZONTAL layouts that should reverse for right to left
          * languages.
          */
-        LinearLayoutManager layoutManager
-                = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        GridLayoutManager layoutManager
+                = new GridLayoutManager(this, 2);
 
         mRecyclerView.setLayoutManager(layoutManager);
+
+        mRecyclerView.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(10), true));
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
         /*
          * Use this setting to improve performance if you know that changes in content do not
@@ -72,8 +74,8 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView.setHasFixedSize(true);
 
         /*
-         * The ForecastAdapter is responsible for linking our weather data with the Views that
-         * will end up displaying our weather data.
+         * The MovieAdapter is responsible for linking our weather data with the Views that
+         * will end up displaying our movie data.
          */
         mMovieAdapter = new MovieAdapter();
 
@@ -90,19 +92,19 @@ public class MainActivity extends AppCompatActivity {
         new MovieAsyncTask().execute(selectedOption);
     }
 
-    public class MovieAsyncTask extends AsyncTask<String, Void, String[]> {
+    public class MovieAsyncTask extends AsyncTask<String, Void, ArrayList<Film>> {
 
         @Override
-        protected String[] doInBackground(String... params) {
+        protected ArrayList<Film> doInBackground(String... params) {
 
             String sortOption = params[0];
             String movieResults = null;
-            String[] jsonMovieResults;
+            ArrayList<Film> movieListResults;
             URL movieRequestUrl = NetworkUtils.buildUrl(sortOption);
             try {
                 movieResults = NetworkUtils.getResponseFromHttpUrl(movieRequestUrl);
-                jsonMovieResults = OpenMovieJsonUtils.getSimpleMovieStringsFromJson(movieResults);
-                return jsonMovieResults;
+                movieListResults = OpenMovieJsonUtils.getArrayListFromJson(movieResults);
+                return movieListResults;
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -112,20 +114,66 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(String[] jsonMovieResults) {
-//            if (jsonMovieResults != null && !jsonMovieResults.equals("")){
-//                mSearchResultsTextView.setText(jsonMovieResults);
+        protected void onPostExecute(ArrayList<Film> movieListResults) {
+//            if (movieListResults != null && !movieListResults.equals("")){
+//                mSearchResultsTextView.setText(movieListResults);
 //            }
 
-//            mSearchResultsTextView.setText(Arrays.toString(jsonMovieResults).replaceAll("\\[|\\]", ""));
+//            mSearchResultsTextView.setText(Arrays.toString(movieListResults).replaceAll("\\[|\\]", ""));
 
 
-            if (jsonMovieResults != null) {
+            if (movieListResults != null) {
 //                showWeatherDataView();
-                mMovieAdapter.setWeatherData(jsonMovieResults);
+                mMovieAdapter.setMovieData(movieListResults);
             } else {
 //                showErrorMessage();
             }
         }
+    }
+
+
+    /**
+     * RecyclerView item decoration - give equal margin around grid item
+     */
+    public class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
+
+        private int spanCount;
+        private int spacing;
+        private boolean includeEdge;
+
+        public GridSpacingItemDecoration(int spanCount, int spacing, boolean includeEdge) {
+            this.spanCount = spanCount;
+            this.spacing = spacing;
+            this.includeEdge = includeEdge;
+        }
+
+        @Override
+        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            int position = parent.getChildAdapterPosition(view); // item position
+            int column = position % spanCount; // item column
+
+            if (includeEdge) {
+                outRect.left = spacing - column * spacing / spanCount; // spacing - column * ((1f / spanCount) * spacing)
+                outRect.right = (column + 1) * spacing / spanCount; // (column + 1) * ((1f / spanCount) * spacing)
+
+                if (position < spanCount) { // top edge
+                    outRect.top = spacing;
+                }
+                outRect.bottom = spacing; // item bottom
+            } else {
+                outRect.left = column * spacing / spanCount; // column * ((1f / spanCount) * spacing)
+                outRect.right = spacing - (column + 1) * spacing / spanCount; // spacing - (column + 1) * ((1f /    spanCount) * spacing)
+                if (position >= spanCount) {
+                    outRect.top = spacing; // item top
+                }
+            }
+        }
+    }
+    /**
+     * Converting dp to pixel
+     */
+    private int dpToPx(int dp) {
+        Resources r = getResources();
+        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
     }
 }
