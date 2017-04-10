@@ -1,12 +1,16 @@
 package com.example.android.popularmovies.utilities;
 
 import android.content.Context;
+import android.graphics.Movie;
+
+import com.example.android.popularmovies.Film;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
 
 import static android.R.attr.description;
 import static android.R.attr.fingerprintAuthDrawable;
@@ -26,7 +30,7 @@ public final class OpenMovieJsonUtils {
      *
      * @throws JSONException If JSON data cannot be properly parsed
      */
-    public static String[] getSimpleMovieStringsFromJson(String moviesJsonResult)
+    public static ArrayList<Film> getArrayListFromJson(String moviesJsonResult)
             throws JSONException {
 
         /* Weather information. Each day's forecast info is an element of the "list" array */
@@ -39,14 +43,14 @@ public final class OpenMovieJsonUtils {
         final String POSTER_PATH = "poster_path";
         final String VOTE_AVG = "vote_average";
 
-        /* String array to hold movies String */
-        String[] parsedMoviesData = null;
+        /* ArrayList to hold movie objects */
+        ArrayList<Film> moviesArrayList = new ArrayList<>();
 
         JSONObject movieJson = new JSONObject(moviesJsonResult);
 
         JSONArray movieArray = movieJson.getJSONArray(LIST);
 
-        parsedMoviesData = new String[movieArray.length()];
+//        parsedMoviesData = new String[movieArray.length()];
 
         for (int i = 0; i < movieArray.length(); i++) {
 
@@ -66,9 +70,12 @@ public final class OpenMovieJsonUtils {
             poster_path = movie.getString(POSTER_PATH);
             vote_average = (float) movie.getDouble(VOTE_AVG);
 
-            parsedMoviesData[i] = title + vote_average;
+            Film film = new Film(title, release_date, poster_path, vote_average, overview);
+
+            moviesArrayList.add(film);
+//            parsedMoviesData[i] = title + vote_average;
         }
 
-        return parsedMoviesData;
+        return moviesArrayList;
     }
 }

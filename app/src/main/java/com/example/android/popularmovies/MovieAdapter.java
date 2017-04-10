@@ -5,28 +5,34 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.example.android.popularmovies.utilities.NetworkUtils;
+import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
 
 /**
  * Created by ygarcia on 4/5/2017.
  */
 
 /**
- * {@link MovieAdapter} exposes a list of weather forecasts to a
+ * {@link MovieAdapter} exposes a list of movies to a
  * {@link android.support.v7.widget.RecyclerView}
  */
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapterViewHolder> {
 
-    private String[] mMovieData;
+    private ArrayList<Film> mMovieData;
 
     /**
      * This method is used to set the weather forecast on a ForecastAdapter if we've already
      * created one. This is handy when we get new data from the web but don't want to create a
      * new ForecastAdapter to display it.
      *
-     * @param weatherData The new weather data to be displayed.
+     * @param movieData The new weather data to be displayed.
      */
-    public void setWeatherData(String[] movieData) {
+    public void setMovieData(ArrayList<Film> movieData) {
         mMovieData = movieData;
         notifyDataSetChanged();
     }
@@ -67,8 +73,12 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
      */
     @Override
     public void onBindViewHolder(MovieAdapterViewHolder holder, int position) {
-        String singleMovieData = mMovieData[position];
-        holder.mMovieTextView.setText(singleMovieData);
+        Film singleMovieObj = mMovieData.get(position);
+        Context context = holder.mImageView.getContext();
+        String movie_poster_path = singleMovieObj.getmPosterPath();
+        String full_img_url = NetworkUtils.BASE_POST_URL + NetworkUtils.POST_FILE_SIZE_URL + movie_poster_path;
+
+        Picasso.with(context).load(full_img_url).into(holder.mImageView);
     }
 
 
@@ -81,7 +91,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
     @Override
     public int getItemCount() {
         if (null == mMovieData) return 0;
-        return mMovieData.length;
+        return mMovieData.size();
     }
 
 
@@ -89,11 +99,11 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
      * Cache of the children views for a forecast list item.
      */
     public class MovieAdapterViewHolder extends RecyclerView.ViewHolder {
-        public final TextView mMovieTextView;
+        public final ImageView mImageView;
 
         public MovieAdapterViewHolder(View view) {
             super(view);
-            mMovieTextView = (TextView) view.findViewById(R.id.tv_movie_data);
+            mImageView = (ImageView)view.findViewById(R.id.iv_poster);
 //            view.setOnClickListener(this);
         }
 
