@@ -25,6 +25,23 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
 
     private ArrayList<Film> mMovieData;
 
+    /*
+     * An on-click handler that we've defined to make it easy for an Activity to interface with
+     * our RecyclerView
+     */
+    final private ListItemClickListener mOnClickListener;
+
+    public MovieAdapter(ListItemClickListener listener) {
+        this.mOnClickListener = listener;
+    }
+
+    /**
+     * The interface that receives onClick messages.
+     */
+    public interface ListItemClickListener {
+        void onListItemClick(Film filmSelected);
+    }
+
     /**
      * This method is used to set the weather forecast on a ForecastAdapter if we've already
      * created one. This is handy when we get new data from the web but don't want to create a
@@ -98,13 +115,25 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
     /**
      * Cache of the children views for a forecast list item.
      */
-    public class MovieAdapterViewHolder extends RecyclerView.ViewHolder {
+    public class MovieAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         public final ImageView mImageView;
 
         public MovieAdapterViewHolder(View view) {
             super(view);
             mImageView = (ImageView)view.findViewById(R.id.iv_poster);
-//            view.setOnClickListener(this);
+            view.setOnClickListener(this);
+        }
+
+
+        /**
+         * Called whenever a user clicks on an item in the list.
+         * @param view The View that was clicked
+         */
+        @Override
+        public void onClick(View view) {
+            int clickedPosition = getAdapterPosition();
+            Film filmSelected = mMovieData.get(clickedPosition);
+            mOnClickListener.onListItemClick(filmSelected);
         }
 
 

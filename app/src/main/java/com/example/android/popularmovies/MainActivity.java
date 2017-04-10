@@ -10,9 +10,12 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.example.android.popularmovies.utilities.OpenMovieJsonUtils;
@@ -20,7 +23,7 @@ import com.example.android.popularmovies.utilities.OpenMovieJsonUtils;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MovieAdapter.ListItemClickListener{
 
     String selectedOption = NetworkUtils.SORT_BY_POPULAR_MOVIE;
 
@@ -77,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
          * The MovieAdapter is responsible for linking our weather data with the Views that
          * will end up displaying our movie data.
          */
-        mMovieAdapter = new MovieAdapter();
+        mMovieAdapter = new MovieAdapter(this);
 
 
         /* Setting the adapter attaches it to the RecyclerView in our layout. */
@@ -90,6 +93,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadMovieData(){
         new MovieAsyncTask().execute(selectedOption);
+    }
+
+    @Override
+    public void onListItemClick(Film filmSelected) {
+        String text = filmSelected.getmTitle();
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
     }
 
     public class MovieAsyncTask extends AsyncTask<String, Void, ArrayList<Film>> {
@@ -175,5 +184,31 @@ public class MainActivity extends AppCompatActivity {
     private int dpToPx(int dp) {
         Resources r = getResources();
         return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu options from the res/menu/menu_catalog.xml file.
+        // This adds menu items to the app bar.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // User clicked on a menu option in the app bar overflow menu
+        switch (item.getItemId()) {
+            // Respond to a click on the "Insert dummy data" menu option
+            case R.id.sort_popular:
+                selectedOption = NetworkUtils.SORT_BY_POPULAR_MOVIE;
+                loadMovieData();
+                return true;
+            // Respond to a click on the "Delete all entries" menu option
+            case R.id.sort_highest_rated:
+                selectedOption = NetworkUtils.SORT_BY_TOP_RATED_MOVIE;
+                loadMovieData();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
