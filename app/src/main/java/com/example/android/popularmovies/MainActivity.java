@@ -1,5 +1,6 @@
 package com.example.android.popularmovies;
 
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.AsyncTask;
@@ -97,11 +98,18 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
 
     @Override
     public void onListItemClick(Film filmSelected) {
-        String text = filmSelected.getmTitle();
-        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+        Intent startMovieDetailIntent = new Intent(this, MovieDetail.class);
+        startMovieDetailIntent.putExtra("movieSelected", filmSelected);
+        startActivity(startMovieDetailIntent);
     }
 
     public class MovieAsyncTask extends AsyncTask<String, Void, ArrayList<Film>> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mLoadingIndicator.setVisibility(View.VISIBLE);
+        }
 
         @Override
         protected ArrayList<Film> doInBackground(String... params) {
@@ -124,18 +132,12 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
 
         @Override
         protected void onPostExecute(ArrayList<Film> movieListResults) {
-//            if (movieListResults != null && !movieListResults.equals("")){
-//                mSearchResultsTextView.setText(movieListResults);
-//            }
-
-//            mSearchResultsTextView.setText(Arrays.toString(movieListResults).replaceAll("\\[|\\]", ""));
-
-
+            mLoadingIndicator.setVisibility(View.INVISIBLE);
             if (movieListResults != null) {
-//                showWeatherDataView();
+                showWeatherDataView();
                 mMovieAdapter.setMovieData(movieListResults);
             } else {
-//                showErrorMessage();
+                showErrorMessage();
             }
         }
     }
@@ -210,5 +212,32 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * This method will make the View for the movies data visible and
+     * hide the error message.
+     * <p>
+     * Since it is okay to redundantly set the visibility of a View, we don't
+     * need to check whether each view is currently visible or invisible.
+     */
+    private void showWeatherDataView() {
+        /* First, make sure the error is invisible */
+        mErrorMessageDisplay.setVisibility(View.INVISIBLE);
+        /* Then, make sure the weather data is visible */
+        mRecyclerView.setVisibility(View.VISIBLE);
+    }
+    /**
+     * This method will make the error message visible and hide the movies
+     * View.
+     * <p>
+     * Since it is okay to redundantly set the visibility of a View, we don't
+     * need to check whether each view is currently visible or invisible.
+     */
+    private void showErrorMessage() {
+        /* First, hide the currently visible data */
+        mRecyclerView.setVisibility(View.INVISIBLE);
+        /* Then, show the error */
+        mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
 }
