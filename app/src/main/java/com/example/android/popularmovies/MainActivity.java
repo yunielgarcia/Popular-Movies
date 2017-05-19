@@ -1,14 +1,14 @@
 package com.example.android.popularmovies;
 
+import android.app.LoaderManager;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.res.Resources;
 import android.graphics.Rect;
-import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.Menu;
@@ -16,17 +16,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.example.android.popularmovies.utilities.AsyncMovieTaskLoader;
 import com.example.android.popularmovies.utilities.NetworkUtils;
-import com.example.android.popularmovies.utilities.OpenMovieJsonUtils;
 
-import java.net.URL;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements MovieAdapter.ListItemClickListener{
+public class MainActivity extends AppCompatActivity implements MovieAdapter.ListItemClickListener, LoaderManager.LoaderCallbacks<ArrayList<Film>>{
 
     String selectedOption = NetworkUtils.SORT_BY_POPULAR_MOVIE;
+
+    private static final int MOVIES_LOADER_ID = 0;
 
     private RecyclerView mRecyclerView;
     private MovieAdapter mMovieAdapter;
@@ -34,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
     private TextView mErrorMessageDisplay;
 
     private ProgressBar mLoadingIndicator;
+
+    AsyncMovieTaskLoader asyncMovieTaskLoader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,12 +90,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         mRecyclerView.setAdapter(mMovieAdapter);
 
 
+
         loadMovieData();
 
     }
 
     private void loadMovieData(){
-        new MovieAsyncTask().execute(selectedOption);
+        getLoaderManager().initLoader(MOVIES_LOADER_ID, null, this);
     }
 
     @Override
@@ -103,43 +106,30 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         startActivity(startMovieDetailIntent);
     }
 
-    public class MovieAsyncTask extends AsyncTask<String, Void, ArrayList<Film>> {
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mLoadingIndicator.setVisibility(View.VISIBLE);
-        }
 
-        @Override
-        protected ArrayList<Film> doInBackground(String... params) {
 
-            String sortOption = params[0];
-            String movieResults = null;
-            ArrayList<Film> movieListResults;
-            URL movieRequestUrl = NetworkUtils.buildUrl(sortOption);
-            try {
-                movieResults = NetworkUtils.getResponseFromHttpUrl(movieRequestUrl);
-                movieListResults = OpenMovieJsonUtils.getArrayListFromJson(movieResults);
-                return movieListResults;
+    @Override
+    public Loader<ArrayList<Film>> onCreateLoader(int id, Bundle args) {
+        asyncMovieTaskLoader = new AsyncMovieTaskLoader(this, selectedOption);
+        mLoadingIndicator.setVisibility(View.VISIBLE);
+        return asyncMovieTaskLoader;
+    }
 
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<Film> movieListResults) {
-            mLoadingIndicator.setVisibility(View.INVISIBLE);
+    @Override
+    public void onLoadFinished(Loader<ArrayList<Film>> loader, ArrayList<Film> movieListResults) {
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
             if (movieListResults != null) {
                 showWeatherDataView();
                 mMovieAdapter.setMovieData(movieListResults);
             } else {
                 showErrorMessage();
             }
-        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<ArrayList<Film>> loader) {
+
     }
 
 
@@ -203,11 +193,16 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
             // Respond to a click on the "Insert dummy data" menu option
             case R.id.sort_popular:
                 selectedOption = NetworkUtils.SORT_BY_POPULAR_MOVIE;
+                if(asyncMovieTaskLoader != null){
+                    asyncMovieTaskLoader.refresh(selectedOption);
+                }
                 loadMovieData();
                 return true;
-            // Respond to a click on the "Delete all entries" menu option
             case R.id.sort_highest_rated:
                 selectedOption = NetworkUtils.SORT_BY_TOP_RATED_MOVIE;
+                if(asyncMovieTaskLoader != null){
+                    asyncMovieTaskLoader.refresh(selectedOption);
+                }
                 loadMovieData();
                 return true;
         }

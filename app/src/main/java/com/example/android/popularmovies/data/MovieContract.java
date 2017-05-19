@@ -55,6 +55,7 @@ public final class MovieContract {
 
         public final static String _ID = BaseColumns._ID;
         public final static String COLUMN_MOVIE_TITLE = "title";
+        public final static String COLUMN_MOVIE_ID = "movieId";
     }
 
 }

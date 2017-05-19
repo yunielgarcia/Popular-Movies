@@ -101,7 +101,7 @@ public class MovieProvider extends ContentProvider{
 
         validateValues(values);
 
-        // Get writeable database
+        // Get writable database
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
 
         // Insert the new pet with the given values
@@ -113,7 +113,7 @@ public class MovieProvider extends ContentProvider{
             return null;
         }
 
-        //Notify all listeners that the data has changed for the pet content URI
+        //Notify all listeners that the data has changed for the movie content URI
         getContext().getContentResolver().notifyChange(uri, null);
 
         // Once we know the ID of the new row in the table,
