@@ -1,135 +1,95 @@
 package com.example.android.popularmovies.utilities;
 
 import android.content.AsyncTaskLoader;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.FileObserver;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.example.android.popularmovies.Film;
+import com.example.android.popularmovies.MainActivity;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by ygarcia on 5/19/2017.
  */
 
 public class AsyncMovieTaskLoader extends AsyncTaskLoader<ArrayList<Film>>{
+
     private String mSortOption;
-    private ArrayList<Film> mCached;
-    private Throwable mError;
-    private LoaderListener<ArrayList<Film>> mListener;
+    private ArrayList<Film> mData;
+    private Context mContext;
+    private BroadcastReceiver broadcastReceiver;
+    private IntentFilter intentFilter;
+    boolean dataSourceChange = false;
+    private static final String SELECTED_OPTION = "selectedOption";
 
     public AsyncMovieTaskLoader(Context context, String sortOption) {
         super(context);
+        mContext = context;
         mSortOption = sortOption;
-        this.init();
-    }
-
-    private void init() {
-        this.mError = null;
-    }
-
-    public void setListener(LoaderListener<ArrayList<Film>> listener) {
-        this.mListener = listener;
-    }
-
-    /**
-     * Called when there is new data to deliver to the client.  The
-     * super class will take care of delivering it; the implementation
-     * here just adds a little more logic.
-     */
-    @Override
-    public void deliverResult(ArrayList<Film> data) {
-        // If the loader is reset and it is going to finish, purge the cached data
-        if (this.isReset()) {
-            if (mCached != null) {
-                mCached = null;
-            }
-            return;
-        }
-
-        mCached = data;
-
-        if (this.isStarted()) {
-            super.deliverResult(data);
-        }
     }
 
     @Override
     protected void onStartLoading() {
-        // Return the cached data if exists
-        if (mCached != null) {
-            deliverResult(mCached);
-            return;
+        if (mData != null) {
+            // Use cached data
+            deliverResult(mData);
+        } else {
+            // We have no data, so kick off loading it
+            forceLoad();
+            broadcastReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    dataSourceChange = true;
+                    if (intent.hasExtra(SELECTED_OPTION)){
+                        String option = intent.getStringExtra(SELECTED_OPTION);
+                        mSortOption = option;
+                    }
+                    forceLoad();
+                }
+            };
+
+            intentFilter = new IntentFilter();
+            intentFilter.addAction("DataSourceChangeNotification");
+            LocalBroadcastManager.getInstance(mContext).registerReceiver(broadcastReceiver, intentFilter);
         }
-
-        // If data source is changed or cached data is null, try to get data
-        if (takeContentChanged() || mCached == null) {
-            this.forceLoad();
-        }
     }
-
-    /**
-     * Handles a request to stop the Loader.
-     */
-    @Override
-    protected void onStopLoading() {
-        this.cancelLoad();
-    }
-
-    /**
-     * Handles a request to completely reset the Loader.
-     */
-    @Override
-    protected void onReset() {
-        super.onReset();
-
-        // Ensure the loader is stopped
-        onStopLoading();
-
-        // Initialize status and delete the cached data so that, in the next time, new data is fetched
-        init();
-        mCached = null;
-    }
-
 
     @Override
     public ArrayList<Film> loadInBackground() {
-
-        if (mListener != null) {
-            mListener.onLoadStarted(this);
-        }
-
         String movieResults = null;
         ArrayList<Film> movieListResults;
         URL movieRequestUrl = NetworkUtils.buildUrl(mSortOption);
         try {
             movieResults = NetworkUtils.getResponseFromHttpUrl(movieRequestUrl);
             movieListResults = OpenMovieJsonUtils.getArrayListFromJson(movieResults);
+            dataSourceChange = false;
             return movieListResults;
 
         } catch (Exception e) {
-            mError = e;
             e.printStackTrace();
             return null;
         }
     }
 
-    public void refresh(String sortOption) {
-        mSortOption = sortOption;
-        reset();
-        startLoading();
+    @Override
+    public void deliverResult(ArrayList<Film> data) {
+        // We’ll save the data for later retrieval
+        mData = data;
+        super.deliverResult(data);
     }
 
-    public Throwable getError() {
-        return this.mError;
+    @Override
+    protected void onReset() {
+        super.onReset();
+        LocalBroadcastManager.getInstance(mContext).unregisterReceiver(broadcastReceiver);
     }
 
-    public boolean hasError() {
-        return this.mError != null;
-    }
 
-    public static interface LoaderListener<T> {
-        public void onLoadStarted(final AsyncTaskLoader<ArrayList<Film>> loader);
-        public void onLoadFinished(final AsyncTaskLoader<ArrayList<Film>> loader, ArrayList<Film> data);
-    }
 }

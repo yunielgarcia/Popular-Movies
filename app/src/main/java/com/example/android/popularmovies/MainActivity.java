@@ -6,6 +6,7 @@ import android.content.Loader;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
@@ -24,7 +25,8 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements MovieAdapter.ListItemClickListener, LoaderManager.LoaderCallbacks<ArrayList<Film>>{
 
-    String selectedOption = NetworkUtils.SORT_BY_POPULAR_MOVIE;
+    private String selectedOption = NetworkUtils.SORT_BY_POPULAR_MOVIE;
+    private static final String SELECTED_OPTION = "selectedOption";
 
     private static final int MOVIES_LOADER_ID = 0;
 
@@ -193,17 +195,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
             // Respond to a click on the "Insert dummy data" menu option
             case R.id.sort_popular:
                 selectedOption = NetworkUtils.SORT_BY_POPULAR_MOVIE;
-                if(asyncMovieTaskLoader != null){
-                    asyncMovieTaskLoader.refresh(selectedOption);
-                }
-                loadMovieData();
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
+                        new Intent("DataSourceChangeNotification").putExtra(SELECTED_OPTION, selectedOption));
                 return true;
             case R.id.sort_highest_rated:
                 selectedOption = NetworkUtils.SORT_BY_TOP_RATED_MOVIE;
-                if(asyncMovieTaskLoader != null){
-                    asyncMovieTaskLoader.refresh(selectedOption);
-                }
-                loadMovieData();
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
+                        new Intent("DataSourceChangeNotification").putExtra(SELECTED_OPTION, selectedOption));
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -235,4 +233,5 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         /* Then, show the error */
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
+
 }
