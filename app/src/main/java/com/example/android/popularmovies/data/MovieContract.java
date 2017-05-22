@@ -55,7 +55,11 @@ public final class MovieContract {
 
         public final static String _ID = BaseColumns._ID;
         public final static String COLUMN_MOVIE_TITLE = "title";
-        public final static String COLUMN_MOVIE_ID = "movieId";
+        public final static String COLUMN_RELEASE_DATE = "releaseDate";
+        public final static String COLUMN_OVERVIEW = "overview";
+        public final static String COLUMN_VOTE_AVERAGE = "vote_average";
+        public final static String COLUMN_SOURCE_ID = "sourceId";
+        public final static String COLUMN_IMG_PATH = "posterPath";
     }
 
 }

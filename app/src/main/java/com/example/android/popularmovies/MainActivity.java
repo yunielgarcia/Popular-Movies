@@ -1,9 +1,11 @@
 package com.example.android.popularmovies;
 
 import android.app.LoaderManager;
+import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
@@ -18,17 +20,19 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.example.android.popularmovies.data.MovieContract;
 import com.example.android.popularmovies.utilities.AsyncMovieTaskLoader;
 import com.example.android.popularmovies.utilities.NetworkUtils;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements MovieAdapter.ListItemClickListener, LoaderManager.LoaderCallbacks<ArrayList<Film>>{
+public class MainActivity extends AppCompatActivity implements MovieAdapter.ListItemClickListener {
 
     private String selectedOption = NetworkUtils.SORT_BY_POPULAR_MOVIE;
     private static final String SELECTED_OPTION = "selectedOption";
 
     private static final int MOVIES_LOADER_ID = 0;
+    private static final int FAVORITE_LOADER_ID = 2;
 
     private RecyclerView mRecyclerView;
     private MovieAdapter mMovieAdapter;
@@ -38,6 +42,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
     private ProgressBar mLoadingIndicator;
 
     AsyncMovieTaskLoader asyncMovieTaskLoader;
+
+    //The correct answer is as per @dymmeh's comment, i.e. not for the Activity to implement
+    // two LoaderCallbacks interfaces but for the activity to contain two LoaderCallbacks
+    // implementations. By way of example: initialise your LoaderCallbacks fields in your activity...
+
+    private LoaderManager.LoaderCallbacks<ArrayList<Film>> dataNetworkSourceLoaderListener;
+    private LoaderManager.LoaderCallbacks<Cursor> dataBaseSourceLoaderListener;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,13 +104,60 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         mRecyclerView.setAdapter(mMovieAdapter);
 
 
+        dataNetworkSourceLoaderListener = new LoaderManager.LoaderCallbacks<ArrayList<Film>>() {
+
+            @Override
+            public Loader<ArrayList<Film>> onCreateLoader(int id, Bundle args) {
+                asyncMovieTaskLoader = new AsyncMovieTaskLoader(getBaseContext(), selectedOption);
+                mLoadingIndicator.setVisibility(View.VISIBLE);
+                return asyncMovieTaskLoader;
+            }
+
+            @Override
+            public void onLoadFinished(Loader<ArrayList<Film>> loader, ArrayList<Film> movieListResults) {
+                mLoadingIndicator.setVisibility(View.INVISIBLE);
+                if (movieListResults != null) {
+                    showWeatherDataView();
+                    mMovieAdapter.setMovieData(movieListResults);
+                } else {
+                    showErrorMessage();
+                }
+            }
+
+            @Override
+            public void onLoaderReset(Loader<ArrayList<Film>> loader) {
+
+            }
+        };
+
+        dataBaseSourceLoaderListener = new LoaderManager.LoaderCallbacks<Cursor>() {
+            @Override
+            public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                return new CursorLoader(getBaseContext(), MovieContract.MovieEntry.CONTENT_URI, null, null, null, null);
+            }
+
+            @Override
+            public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+//                ArrayList<WhateverTypeYouWant> mArrayList = new ArrayList<WhateverTypeYouWant>();
+//                for(mCursor.moveToFirst(); !mCursor.isAfterLast(); mCursor.moveToNext()) {
+//                    // The Cursor is now set to the right position
+//                    mArrayList.add(mCursor.getWhateverTypeYouWant(WHATEVER_COLUMN_INDEX_YOU_WANT));
+//                }
+            }
+
+            @Override
+            public void onLoaderReset(Loader<Cursor> loader) {
+
+            }
+        };
+
 
         loadMovieData();
 
     }
 
-    private void loadMovieData(){
-        getLoaderManager().initLoader(MOVIES_LOADER_ID, null, this);
+    private void loadMovieData() {
+        getLoaderManager().initLoader(MOVIES_LOADER_ID, null, dataNetworkSourceLoaderListener);
     }
 
     @Override
@@ -106,32 +165,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         Intent startMovieDetailIntent = new Intent(this, MovieDetail.class);
         startMovieDetailIntent.putExtra("movieSelected", filmSelected);
         startActivity(startMovieDetailIntent);
-    }
-
-
-
-
-    @Override
-    public Loader<ArrayList<Film>> onCreateLoader(int id, Bundle args) {
-        asyncMovieTaskLoader = new AsyncMovieTaskLoader(this, selectedOption);
-        mLoadingIndicator.setVisibility(View.VISIBLE);
-        return asyncMovieTaskLoader;
-    }
-
-    @Override
-    public void onLoadFinished(Loader<ArrayList<Film>> loader, ArrayList<Film> movieListResults) {
-        mLoadingIndicator.setVisibility(View.INVISIBLE);
-            if (movieListResults != null) {
-                showWeatherDataView();
-                mMovieAdapter.setMovieData(movieListResults);
-            } else {
-                showErrorMessage();
-            }
-    }
-
-    @Override
-    public void onLoaderReset(Loader<ArrayList<Film>> loader) {
-
     }
 
 
@@ -172,6 +205,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
             }
         }
     }
+
     /**
      * Converting dp to pixel
      */
@@ -203,6 +237,9 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
                         new Intent("DataSourceChangeNotification").putExtra(SELECTED_OPTION, selectedOption));
                 return true;
+            case R.id.sort_favorite:
+                getLoaderManager().initLoader(FAVORITE_LOADER_ID, null, dataBaseSourceLoaderListener);
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -220,6 +257,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         /* Then, make sure the weather data is visible */
         mRecyclerView.setVisibility(View.VISIBLE);
     }
+
     /**
      * This method will make the error message visible and hide the movies
      * View.

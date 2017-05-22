@@ -86,7 +86,7 @@ public class MovieProvider extends ContentProvider{
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
         final int match = sUriMatcher.match(uri);
         switch (match) {
-            case MOVIE_ID:
+            case MOVIES:
                 return insertMovie(uri, values);
             default:
                 throw new IllegalArgumentException("Insertion is not supported for " + uri);

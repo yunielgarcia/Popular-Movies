@@ -1,19 +1,12 @@
 package com.example.android.popularmovies.utilities;
 
-import android.content.Context;
-import android.graphics.Movie;
-
 import com.example.android.popularmovies.Film;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
-
-import static android.R.attr.description;
-import static android.R.attr.fingerprintAuthDrawable;
 
 /**
  * Created by ygarcia on 4/5/2017.
@@ -40,6 +33,7 @@ public final class OpenMovieJsonUtils {
         final String RELEASE_DATE = "release_date";
         final String POSTER_PATH = "poster_path";
         final String VOTE_AVG = "vote_average";
+        final String SOURCE_ID = "id";
 
         /* ArrayList to hold movie objects */
         ArrayList<Film> moviesArrayList = new ArrayList<>();
@@ -58,6 +52,7 @@ public final class OpenMovieJsonUtils {
             String poster_path;
             float vote_average;
             String overview;
+            int sourceId;
 
             /* Get the JSON object representing the movie */
             JSONObject movie = movieArray.getJSONObject(i);
@@ -67,8 +62,9 @@ public final class OpenMovieJsonUtils {
             release_date = movie.getString(RELEASE_DATE);
             poster_path = movie.getString(POSTER_PATH);
             vote_average = (float) movie.getDouble(VOTE_AVG);
+            sourceId = movie.getInt(SOURCE_ID);
 
-            Film film = new Film(title, release_date, poster_path, vote_average, overview);
+            Film film = new Film(title, release_date, poster_path, vote_average, overview, sourceId);
 
             moviesArrayList.add(film);
 //            parsedMoviesData[i] = title + vote_average;
