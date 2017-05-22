@@ -14,13 +14,15 @@ public class Film implements Parcelable{
     private String mPosterPath;
     private float mVoteAverage;
     private String mOverview;
+    private int mSourceId;
 
-    public Film(String mTitle, String mReleaseDate, String mPosterPath, float mVoteAverage, String overview) {
+    public Film(String mTitle, String mReleaseDate, String mPosterPath, float mVoteAverage, String overview, int sourceId) {
         this.mTitle = mTitle;
         this.mReleaseDate = mReleaseDate;
         this.mPosterPath = mPosterPath;
         this.mVoteAverage = mVoteAverage;
         this.mOverview = overview;
+        this.mSourceId = sourceId;
     }
 
     protected Film(Parcel in) {
@@ -29,6 +31,7 @@ public class Film implements Parcelable{
         mPosterPath = in.readString();
         mVoteAverage = in.readFloat();
         mOverview = in.readString();
+        mSourceId = in.readInt();
     }
 
     @Override
@@ -38,6 +41,7 @@ public class Film implements Parcelable{
         dest.writeString(mPosterPath);
         dest.writeFloat(mVoteAverage);
         dest.writeString(mOverview);
+        dest.writeInt(mSourceId);
     }
 
     @Override
@@ -75,5 +79,9 @@ public class Film implements Parcelable{
 
     public String getmOverview() {
         return mOverview;
+    }
+
+    public int getmSourceId() {
+        return mSourceId;
     }
 }
