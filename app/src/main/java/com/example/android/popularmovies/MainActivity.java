@@ -34,6 +34,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
     private static final int MOVIES_LOADER_ID = 0;
     private static final int FAVORITE_LOADER_ID = 2;
 
+    //key for savedInstanceState
+    private static final String CURRENT_LOADER = "loader";
+    private static final int CURRENT_LOADER_NETWORK = 0;
+    private static final int CURRENT_LOADER_FAV = 1;
+    private static int currentLoader = 0;
+
+
     private RecyclerView mRecyclerView;
     private MovieAdapter mMovieAdapter;
 
@@ -117,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
             public void onLoadFinished(Loader<ArrayList<Film>> loader, ArrayList<Film> movieListResults) {
                 mLoadingIndicator.setVisibility(View.INVISIBLE);
                 if (movieListResults != null) {
-                    showWeatherDataView();
+                    showMovieDataView();
                     mMovieAdapter.setMovieData(movieListResults);
                 } else {
                     showErrorMessage();
@@ -138,11 +145,42 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
 
             @Override
             public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-//                ArrayList<WhateverTypeYouWant> mArrayList = new ArrayList<WhateverTypeYouWant>();
-//                for(mCursor.moveToFirst(); !mCursor.isAfterLast(); mCursor.moveToNext()) {
-//                    // The Cursor is now set to the right position
-//                    mArrayList.add(mCursor.getWhateverTypeYouWant(WHATEVER_COLUMN_INDEX_YOU_WANT));
-//                }
+                Cursor mCursor = data;
+
+                if (data != null){
+                    ArrayList<Film> mArrayList = new ArrayList<Film>();
+                    for (mCursor.moveToFirst(); !mCursor.isAfterLast(); mCursor.moveToNext()) {
+                        // The Cursor is now set to the right position
+
+                        //title
+                        int titleIndex = mCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_MOVIE_TITLE);
+                        String title = mCursor.getString(titleIndex);
+                        //date
+                        int releaseDateIndex = mCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE);
+                        String releaseDate = mCursor.getString(releaseDateIndex);
+                        //poster path
+                        int posterIndex = mCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_IMG_PATH);
+                        String posterPath = mCursor.getString(posterIndex);
+                        //votes
+                        int voteIndex = mCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE);
+                        float voteAvg = mCursor.getFloat(voteIndex);
+                        //overview
+                        int overviewIndex = mCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_OVERVIEW);
+                        String overview = mCursor.getString(overviewIndex);
+                        //sourceId
+                        int sourceIdIndex = mCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_SOURCE_ID);
+                        int sourceId = mCursor.getInt(sourceIdIndex);
+
+                        //new film
+                        Film currentFilm = new Film(title, releaseDate, posterPath, voteAvg, overview, sourceId);
+
+                        mArrayList.add(currentFilm);
+                    }
+
+                    mMovieAdapter.setMovieData(mArrayList);
+                }else {
+                    showErrorMessage();
+                }
             }
 
             @Override
@@ -152,12 +190,29 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         };
 
 
-        loadMovieData();
+
+        if (savedInstanceState != null && savedInstanceState.containsKey(CURRENT_LOADER)) {
+            currentLoader = savedInstanceState.getInt(CURRENT_LOADER);
+            switch (currentLoader){
+                case CURRENT_LOADER_NETWORK:
+                    loadMovieData();
+                    break;
+                case CURRENT_LOADER_FAV:
+                    loadFavorites();
+                    break;
+            }
+        }else {//by default fire http request
+            loadMovieData();
+        }
 
     }
 
     private void loadMovieData() {
         getLoaderManager().initLoader(MOVIES_LOADER_ID, null, dataNetworkSourceLoaderListener);
+//        getSupportLoaderManager().initLoader(MOVIES_LOADER_ID, null, dataNetworkSourceLoaderListener);
+    }
+    private void loadFavorites() {
+//        getLoaderManager().initLoader(FAVORITE_LOADER_ID, null, dataBaseSourceLoaderListener);
     }
 
     @Override
@@ -229,19 +284,32 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
             // Respond to a click on the "Insert dummy data" menu option
             case R.id.sort_popular:
                 selectedOption = NetworkUtils.SORT_BY_POPULAR_MOVIE;
+                currentLoader = 0;
+                mMovieAdapter.setMovieData(null);
                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
                         new Intent("DataSourceChangeNotification").putExtra(SELECTED_OPTION, selectedOption));
                 return true;
             case R.id.sort_highest_rated:
                 selectedOption = NetworkUtils.SORT_BY_TOP_RATED_MOVIE;
+                currentLoader = 0;
+                mMovieAdapter.setMovieData(null);
                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
                         new Intent("DataSourceChangeNotification").putExtra(SELECTED_OPTION, selectedOption));
                 return true;
             case R.id.sort_favorite:
-                getLoaderManager().initLoader(FAVORITE_LOADER_ID, null, dataBaseSourceLoaderListener);
+                currentLoader = 1;
+                mMovieAdapter.setMovieData(null);
+                loadFavorites();
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(CURRENT_LOADER, currentLoader);
     }
 
     /**
@@ -251,7 +319,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
      * Since it is okay to redundantly set the visibility of a View, we don't
      * need to check whether each view is currently visible or invisible.
      */
-    private void showWeatherDataView() {
+    private void showMovieDataView() {
         /* First, make sure the error is invisible */
         mErrorMessageDisplay.setVisibility(View.INVISIBLE);
         /* Then, make sure the weather data is visible */
