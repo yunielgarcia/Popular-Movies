@@ -5,15 +5,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.FileObserver;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.example.android.popularmovies.Film;
-import com.example.android.popularmovies.MainActivity;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by ygarcia on 5/19/2017.
@@ -80,9 +77,9 @@ public class AsyncMovieTaskLoader extends AsyncTaskLoader<ArrayList<Film>>{
 
     @Override
     public void deliverResult(ArrayList<Film> data) {
-        // We’ll save the data for later retrieval
         mData = data;
-        super.deliverResult(data);
+        super.deliverResult(mData);
+
     }
 
     @Override

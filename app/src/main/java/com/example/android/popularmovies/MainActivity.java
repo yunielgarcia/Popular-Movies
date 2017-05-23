@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
     private LoaderManager.LoaderCallbacks<ArrayList<Film>> dataNetworkSourceLoaderListener;
     private LoaderManager.LoaderCallbacks<Cursor> dataBaseSourceLoaderListener;
 
+    private boolean networkLoaderLoaded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,6 +118,9 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
             public Loader<ArrayList<Film>> onCreateLoader(int id, Bundle args) {
                 asyncMovieTaskLoader = new AsyncMovieTaskLoader(getBaseContext(), selectedOption);
                 mLoadingIndicator.setVisibility(View.VISIBLE);
+
+                networkLoaderLoaded = true;
+
                 return asyncMovieTaskLoader;
             }
 
@@ -190,7 +194,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         };
 
 
-
         if (savedInstanceState != null && savedInstanceState.containsKey(CURRENT_LOADER)) {
             currentLoader = savedInstanceState.getInt(CURRENT_LOADER);
             switch (currentLoader){
@@ -212,7 +215,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
 //        getSupportLoaderManager().initLoader(MOVIES_LOADER_ID, null, dataNetworkSourceLoaderListener);
     }
     private void loadFavorites() {
-//        getLoaderManager().initLoader(FAVORITE_LOADER_ID, null, dataBaseSourceLoaderListener);
+        getLoaderManager().initLoader(FAVORITE_LOADER_ID, null, dataBaseSourceLoaderListener);
     }
 
     @Override
@@ -282,20 +285,31 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         // User clicked on a menu option in the app bar overflow menu
         switch (item.getItemId()) {
             // Respond to a click on the "Insert dummy data" menu option
+
             case R.id.sort_popular:
                 selectedOption = NetworkUtils.SORT_BY_POPULAR_MOVIE;
                 currentLoader = 0;
                 mMovieAdapter.setMovieData(null);
-                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
-                        new Intent("DataSourceChangeNotification").putExtra(SELECTED_OPTION, selectedOption));
+                if (networkLoaderLoaded){
+                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
+                            new Intent("DataSourceChangeNotification").putExtra(SELECTED_OPTION, selectedOption));
+                }else {
+                    loadMovieData();
+                }
                 return true;
+
             case R.id.sort_highest_rated:
                 selectedOption = NetworkUtils.SORT_BY_TOP_RATED_MOVIE;
                 currentLoader = 0;
                 mMovieAdapter.setMovieData(null);
-                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
-                        new Intent("DataSourceChangeNotification").putExtra(SELECTED_OPTION, selectedOption));
+                if (networkLoaderLoaded){
+                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
+                            new Intent("DataSourceChangeNotification").putExtra(SELECTED_OPTION, selectedOption));
+                }else {
+                    loadMovieData();
+                }
                 return true;
+
             case R.id.sort_favorite:
                 currentLoader = 1;
                 mMovieAdapter.setMovieData(null);
