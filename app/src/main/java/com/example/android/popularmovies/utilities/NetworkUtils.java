@@ -1,20 +1,13 @@
 package com.example.android.popularmovies.utilities;
 
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.util.Log;
-import android.view.View;
 
-import com.example.android.popularmovies.MainActivity;
-
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.Scanner;
 
 /**
@@ -27,10 +20,15 @@ public final class NetworkUtils {
 
     private static final String MOVIE_BASE_URL = "https://api.themoviedb.org/3/";
 
-    private static final String POPULAR_MOVIE = "movie/popular";
+    private static final String MOVIES = "movie/";
+
+    private static final String TRAILERS = "/videos";
+    private static final String REVIEWS = "/reviews";
+
+    private static final String POPULAR_MOVIE = MOVIES + "popular";
     public static final String SORT_BY_POPULAR_MOVIE = "0";
 
-    private static final String TOP_RATED_MOVIE = "movie/top_rated";
+    private static final String TOP_RATED_MOVIE = MOVIES + "top_rated";
     public static final String SORT_BY_TOP_RATED_MOVIE = "1";
 
     private static final String KEY_PARAM = "api_key";
@@ -38,6 +36,8 @@ public final class NetworkUtils {
 
     public static final String BASE_POST_URL =  "https://image.tmdb.org/t/p";
     public static final String POST_FILE_SIZE_URL =  "/w500";
+
+
 
 
 
@@ -66,6 +66,38 @@ public final class NetworkUtils {
                 .appendQueryParameter(KEY_PARAM, API_KEY_VALUE)
                 .build();
 
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        Log.v(TAG, "Built URI " + url);
+
+        return url;
+    }
+
+    public static URL buildTrailerUrl(String movieId){
+        Uri builtUri = Uri.parse(MOVIE_BASE_URL + MOVIES + movieId + TRAILERS).buildUpon()
+                .appendQueryParameter(KEY_PARAM, API_KEY_VALUE)
+                .build();
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        Log.v(TAG, "Built URI " + url);
+
+        return url;
+    }
+
+    public static URL buildReviewUrl(String movieId){
+        Uri builtUri = Uri.parse(MOVIE_BASE_URL + MOVIES + movieId + REVIEWS).buildUpon()
+                .appendQueryParameter(KEY_PARAM, API_KEY_VALUE)
+                .build();
         URL url = null;
         try {
             url = new URL(builtUri.toString());

@@ -21,7 +21,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.android.popularmovies.data.MovieContract;
-import com.example.android.popularmovies.utilities.AsyncMovieTaskLoader;
+import com.example.android.popularmovies.model.Film;
+import com.example.android.popularmovies.async.AsyncMovieTaskLoader;
 import com.example.android.popularmovies.utilities.NetworkUtils;
 
 import java.util.ArrayList;

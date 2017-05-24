@@ -1,4 +1,4 @@
-package com.example.android.popularmovies.utilities;
+package com.example.android.popularmovies.async;
 
 import android.content.AsyncTaskLoader;
 import android.content.BroadcastReceiver;
@@ -7,7 +7,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v4.content.LocalBroadcastManager;
 
-import com.example.android.popularmovies.Film;
+import com.example.android.popularmovies.model.Film;
+import com.example.android.popularmovies.utilities.NetworkUtils;
+import com.example.android.popularmovies.utilities.OpenMovieJsonUtils;
 
 import java.net.URL;
 import java.util.ArrayList;

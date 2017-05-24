@@ -4,6 +4,7 @@ import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
+import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,10 +17,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.popularmovies.data.MovieContract;
+import com.example.android.popularmovies.model.Film;
+import com.example.android.popularmovies.model.Review;
+import com.example.android.popularmovies.model.Trailer;
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.squareup.picasso.Picasso;
 
-public class MovieDetail extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+import java.util.ArrayList;
+
+public class MovieDetail extends AppCompatActivity{
 
     private static final int EXISTING_MOVIE_LOADER = 1;
     private boolean isFavorite;
@@ -51,6 +57,90 @@ public class MovieDetail extends AppCompatActivity implements LoaderManager.Load
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_detail);
 
+        //get cursor for single movie
+        LoaderManager.LoaderCallbacks<Cursor> mMovieDetailLoaderCallback = new LoaderManager.LoaderCallbacks<Cursor>() {
+            @Override
+            public android.content.Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                // Constructs a selection clause that matches the Id (sourceId)
+                mSelectionClause = MovieContract.MovieEntry.COLUMN_SOURCE_ID + " = ?";
+
+                // Moves the sourceId of the selected movie to the selection arguments.
+                mSelectionArgs[0] = String.valueOf(mSourceId);
+
+
+                return new CursorLoader(getBaseContext(), MovieContract.MovieEntry.CONTENT_URI,
+                        PROJECTION, mSelectionClause, mSelectionArgs, null);
+            }
+
+            @Override
+            public void onLoadFinished(android.content.Loader<Cursor> loader, Cursor data) {
+                // Some providers return null if an error occurs, others throw an exception
+                if (null == data) {
+                    Toast.makeText(getBaseContext(), "Sorry, an error happened.", Toast.LENGTH_SHORT).show();
+        /*
+         * Insert code here to handle the error. Be sure not to use the cursor! You may want to
+         * call android.util.Log.e() to log this error.
+         *
+         */
+                    isFavorite = false;
+                    // If the Cursor is empty, the provider found no matches
+                } else if (data.getCount() < 1) {
+
+        /*
+         * Insert code here to notify the user that the search was unsuccessful. This isn't necessarily
+         * an error. You may want to offer the user the option to insert a new row, or re-type the
+         * search term.
+         */
+                    isFavorite = false;
+                } else {
+                    // Insert code here to do something with the results
+                    isFavorite = true;
+                    int idIndex = data.getColumnIndex("_id");
+                    data.moveToFirst();
+                    movieSelectedId = data.getInt(idIndex);
+                }
+            }
+
+            @Override
+            public void onLoaderReset(android.content.Loader<Cursor> loader) {
+
+            }
+        };
+        //get trailers
+        LoaderManager.LoaderCallbacks<ArrayList<Trailer>> trailersLoaderCallbacks = new LoaderManager.LoaderCallbacks<ArrayList<Trailer>>() {
+            @Override
+            public Loader<ArrayList<Trailer>> onCreateLoader(int id, Bundle args) {
+                return null;
+            }
+
+            @Override
+            public void onLoadFinished(Loader<ArrayList<Trailer>> loader, ArrayList<Trailer> data) {
+
+            }
+
+            @Override
+            public void onLoaderReset(Loader<ArrayList<Trailer>> loader) {
+
+            }
+        };
+        //get reviews
+        LoaderManager.LoaderCallbacks<ArrayList<Review>> reviewsLoaderCallbacks = new LoaderManager.LoaderCallbacks<ArrayList<Review>>() {
+            @Override
+            public Loader<ArrayList<Review>> onCreateLoader(int id, Bundle args) {
+                return null;
+            }
+
+            @Override
+            public void onLoadFinished(Loader<ArrayList<Review>> loader, ArrayList<Review> data) {
+
+            }
+
+            @Override
+            public void onLoaderReset(Loader<ArrayList<Review>> loader) {
+
+            }
+        };
+
         //retrieving data passed to the activity
         movieSelected = getIntent().getParcelableExtra("movieSelected");
         mSourceId = movieSelected.getmSourceId();
@@ -72,7 +162,7 @@ public class MovieDetail extends AppCompatActivity implements LoaderManager.Load
         Picasso.with(this).load(full_img_url).into(poster_iv);
 
         //checking if the current movie is among favorites
-        getLoaderManager().initLoader(EXISTING_MOVIE_LOADER, null, this);
+        getLoaderManager().initLoader(EXISTING_MOVIE_LOADER, null, mMovieDetailLoaderCallback);
     }
 
     @Override
@@ -159,50 +249,4 @@ public class MovieDetail extends AppCompatActivity implements LoaderManager.Load
 
     }
 
-    @Override
-    public android.content.Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        // Constructs a selection clause that matches the Id (sourceId)
-        mSelectionClause = MovieContract.MovieEntry.COLUMN_SOURCE_ID + " = ?";
-
-        // Moves the sourceId of the selected movie to the selection arguments.
-        mSelectionArgs[0] = String.valueOf(mSourceId);
-
-
-        return new CursorLoader(this, MovieContract.MovieEntry.CONTENT_URI,
-                PROJECTION, mSelectionClause, mSelectionArgs, null);
-    }
-
-    @Override
-    public void onLoadFinished(android.content.Loader<Cursor> loader, Cursor data) {
-        // Some providers return null if an error occurs, others throw an exception
-        if (null == data) {
-            Toast.makeText(this, "Sorry, an error happened.", Toast.LENGTH_SHORT).show();
-        /*
-         * Insert code here to handle the error. Be sure not to use the cursor! You may want to
-         * call android.util.Log.e() to log this error.
-         *
-         */
-            isFavorite = false;
-            // If the Cursor is empty, the provider found no matches
-        } else if (data.getCount() < 1) {
-
-        /*
-         * Insert code here to notify the user that the search was unsuccessful. This isn't necessarily
-         * an error. You may want to offer the user the option to insert a new row, or re-type the
-         * search term.
-         */
-            isFavorite = false;
-        } else {
-            // Insert code here to do something with the results
-            isFavorite = true;
-            int idIndex = data.getColumnIndex("_id");
-            data.moveToFirst();
-            movieSelectedId = data.getInt(idIndex);
-        }
-    }
-
-    @Override
-    public void onLoaderReset(android.content.Loader<Cursor> loader) {
-
-    }
 }
