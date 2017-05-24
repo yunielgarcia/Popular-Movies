@@ -1,6 +1,10 @@
 package com.example.android.popularmovies;
 
+import android.app.LoaderManager;
+import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.CursorLoader;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -12,22 +16,35 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.popularmovies.data.MovieContract;
-import com.example.android.popularmovies.data.MovieDbHelper;
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.squareup.picasso.Picasso;
 
-public class MovieDetail extends AppCompatActivity {
+public class MovieDetail extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final int EXISTING_MOVIE_LOADER = 1;
+    private boolean isFavorite;
+    private long movieSelectedId;
+    // Defines a string to contain the selection clause
+    String mSelectionClause = null;
+    // Initializes an array to contain selection arguments
+    String[] mSelectionArgs = {""};
+    //Projection
+    private static final String[] PROJECTION = {
+            MovieContract.MovieEntry._ID,
+            MovieContract.MovieEntry.COLUMN_MOVIE_TITLE
+    };
+    private int mSourceId;
+
 
     TextView title_tv;
     ImageView poster_iv;
     TextView date_tv;
     TextView vote_tv;
     TextView plot_tv;
+    MenuItem favMenuItem;
 
     Film movieSelected;
 
-    // To access our database
-    private MovieDbHelper mDbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,9 +53,7 @@ public class MovieDetail extends AppCompatActivity {
 
         //retrieving data passed to the activity
         movieSelected = getIntent().getParcelableExtra("movieSelected");
-
-        //we instantiate our subclass of SQLiteOpenHelper and pass the context, which is the current activity.
-        mDbHelper = new MovieDbHelper(this);
+        mSourceId = movieSelected.getmSourceId();
 
         String full_img_url = NetworkUtils.BASE_POST_URL + NetworkUtils.POST_FILE_SIZE_URL + movieSelected.getmPosterPath();
 
@@ -55,6 +70,9 @@ public class MovieDetail extends AppCompatActivity {
         plot_tv.setText(movieSelected.getmOverview());
         vote_tv.setText(String.valueOf(movieSelected.getmVoteAverage()));
         Picasso.with(this).load(full_img_url).into(poster_iv);
+
+        //checking if the current movie is among favorites
+        getLoaderManager().initLoader(EXISTING_MOVIE_LOADER, null, this);
     }
 
     @Override
@@ -62,20 +80,48 @@ public class MovieDetail extends AppCompatActivity {
         // Inflate the menu options from the res/menu/detail.xml file.
         // This adds menu items to the app bar.
         getMenuInflater().inflate(R.menu.detail, menu);
+        favMenuItem = menu.findItem(R.id.action_add_favorite);
+
+        if (isFavorite) {
+            favMenuItem.setIcon(R.drawable.ic_star_white_18dp);
+        } else {
+            favMenuItem.setIcon(R.drawable.ic_star_border_white_18dp);
+        }
+
         return true;
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // User clicked on a menu option in the app bar overflow menu
         switch (item.getItemId()) {
             // Respond to a click on the "Insert dummy data" menu option
-            case R.id.action_share:
-                //validar if is currentrly favorite or not then insert or delect upon db
-                insertToFavorite();
+            case R.id.action_add_favorite:
+                if (isFavorite) {
+                    removeFromFavorite();
+                } else {
+                    insertToFavorite();
+                }
+
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void removeFromFavorite() {
+        //build uri
+        Uri itemUri = ContentUris.withAppendedId(MovieContract.MovieEntry.CONTENT_URI, movieSelectedId);
+
+        int rowsDeleted = getContentResolver().delete(itemUri, null, null);
+        if (rowsDeleted > 0) {
+            isFavorite = false;
+            favMenuItem.setIcon(R.drawable.ic_star_border_white_18dp);
+        } else {
+            // Otherwise, the deletion failed and we can display a toast.
+            Toast.makeText(this, getString(R.string.remove_fav_failed),
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void insertToFavorite() {
@@ -105,9 +151,58 @@ public class MovieDetail extends AppCompatActivity {
                     Toast.LENGTH_SHORT).show();
         } else {
             // Otherwise, the insertion was successful and we can display a toast.
+            isFavorite = true;
+            favMenuItem.setIcon(R.drawable.ic_star_white_18dp);
             Toast.makeText(this, getString(R.string.insert_movie_success),
                     Toast.LENGTH_SHORT).show();
         }
+
+    }
+
+    @Override
+    public android.content.Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        // Constructs a selection clause that matches the Id (sourceId)
+        mSelectionClause = MovieContract.MovieEntry.COLUMN_SOURCE_ID + " = ?";
+
+        // Moves the sourceId of the selected movie to the selection arguments.
+        mSelectionArgs[0] = String.valueOf(mSourceId);
+
+
+        return new CursorLoader(this, MovieContract.MovieEntry.CONTENT_URI,
+                PROJECTION, mSelectionClause, mSelectionArgs, null);
+    }
+
+    @Override
+    public void onLoadFinished(android.content.Loader<Cursor> loader, Cursor data) {
+        // Some providers return null if an error occurs, others throw an exception
+        if (null == data) {
+            Toast.makeText(this, "Sorry, an error happened.", Toast.LENGTH_SHORT).show();
+        /*
+         * Insert code here to handle the error. Be sure not to use the cursor! You may want to
+         * call android.util.Log.e() to log this error.
+         *
+         */
+            isFavorite = false;
+            // If the Cursor is empty, the provider found no matches
+        } else if (data.getCount() < 1) {
+
+        /*
+         * Insert code here to notify the user that the search was unsuccessful. This isn't necessarily
+         * an error. You may want to offer the user the option to insert a new row, or re-type the
+         * search term.
+         */
+            isFavorite = false;
+        } else {
+            // Insert code here to do something with the results
+            isFavorite = true;
+            int idIndex = data.getColumnIndex("_id");
+            data.moveToFirst();
+            movieSelectedId = data.getInt(idIndex);
+        }
+    }
+
+    @Override
+    public void onLoaderReset(android.content.Loader<Cursor> loader) {
 
     }
 }

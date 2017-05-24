@@ -212,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
 
     private void loadMovieData() {
         getLoaderManager().initLoader(MOVIES_LOADER_ID, null, dataNetworkSourceLoaderListener);
-//        getSupportLoaderManager().initLoader(MOVIES_LOADER_ID, null, dataNetworkSourceLoaderListener);
+        networkLoaderLoaded = true;
     }
     private void loadFavorites() {
         getLoaderManager().initLoader(FAVORITE_LOADER_ID, null, dataBaseSourceLoaderListener);
@@ -290,24 +290,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
                 selectedOption = NetworkUtils.SORT_BY_POPULAR_MOVIE;
                 currentLoader = 0;
                 mMovieAdapter.setMovieData(null);
-                if (networkLoaderLoaded){
-                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
-                            new Intent("DataSourceChangeNotification").putExtra(SELECTED_OPTION, selectedOption));
-                }else {
-                    loadMovieData();
-                }
+                emitDataSourceChange();
                 return true;
 
             case R.id.sort_highest_rated:
                 selectedOption = NetworkUtils.SORT_BY_TOP_RATED_MOVIE;
                 currentLoader = 0;
                 mMovieAdapter.setMovieData(null);
-                if (networkLoaderLoaded){
-                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
-                            new Intent("DataSourceChangeNotification").putExtra(SELECTED_OPTION, selectedOption));
-                }else {
-                    loadMovieData();
-                }
+                emitDataSourceChange();
                 return true;
 
             case R.id.sort_favorite:
@@ -352,6 +342,15 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         mRecyclerView.setVisibility(View.INVISIBLE);
         /* Then, show the error */
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
+    }
+
+    private void emitDataSourceChange(){
+        if (networkLoaderLoaded){
+            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
+                    new Intent("DataSourceChangeNotification").putExtra(SELECTED_OPTION, selectedOption));
+        }else {
+            loadMovieData();
+        }
     }
 
 }

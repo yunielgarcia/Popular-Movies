@@ -156,7 +156,27 @@ public class MovieProvider extends ContentProvider{
 
     @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
+        // Get writeable database
+        SQLiteDatabase database = mOpenHelper.getWritableDatabase();
+
+        final int match = sUriMatcher.match(uri);
+
+        switch (match) {
+            case MOVIES:
+                // Delete all rows that match the selection and selection args
+                return database.delete(MovieContract.MovieEntry.TABLE_NAME, selection, selectionArgs);
+            case MOVIE_ID:
+                // Delete a single row given by the ID in the URI
+                selection = MovieContract.MovieEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+
+                //Notify all listeners that the data has changed for the pet content URI
+                getContext().getContentResolver().notifyChange(uri, null);
+
+                return database.delete(MovieContract.MovieEntry.TABLE_NAME, selection, selectionArgs);
+            default:
+                throw new IllegalArgumentException("Deletion is not supported for " + uri);
+        }
     }
 
     @Override
