@@ -44,6 +44,30 @@
 
         </LinearLayout>
 
+        <!--trailer   -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="20dp">
+
+            <TextView
+                style="@style/detail_headers"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.9"
+                android:layout_marginTop="13dp"
+                android:text="@string/detail_trailer_label" />
+
+            <ImageButton
+                android:id="@+id/play_trailer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.1"
+                android:src="@drawable/ic_play_arrow_black_24dp"/>
+
+        </LinearLayout>
+
         <!--votes-->
         <LinearLayout
             android:layout_width="match_parent"
@@ -114,6 +138,12 @@
                 tools:text="@string/plot_placeholder" />
 
         </LinearLayout>
+
+        <ListView
+            android:id="@+id/reviews_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        </ListView>
 
 
     </LinearLayout>
