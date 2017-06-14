@@ -16,4 +16,6 @@
     <string name="insert_movie_success">successfully added to your favorites</string>
     <string name="remove_fav_failed">Could not remove from favorites.</string>
 
+    <!--tools-->
+    <string name="tool_title">Chappie</string>
 </resources>
