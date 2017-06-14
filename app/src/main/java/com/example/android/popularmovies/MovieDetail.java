@@ -8,8 +8,11 @@ import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.icu.text.SimpleDateFormat;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.Menu;
@@ -29,7 +32,9 @@ import com.example.android.popularmovies.model.Trailer;
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.squareup.picasso.Picasso;
 
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class MovieDetail extends AppCompatActivity {
 
@@ -67,7 +72,10 @@ public class MovieDetail extends AppCompatActivity {
     ReviewAdapter reviewAdapter;
     ListView reviewsListView;
 
+    Date yearDate;
 
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,6 +84,13 @@ public class MovieDetail extends AppCompatActivity {
         //retrieving data passed to the activity
         movieSelected = getIntent().getParcelableExtra("movieSelected");
         mSourceId = movieSelected.getmSourceId();
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy");
+        try {
+            yearDate = dateFormat.parse(movieSelected.getmReleaseDate());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 
         String full_img_url = NetworkUtils.BASE_POST_URL + NetworkUtils.POST_FILE_SIZE_URL + movieSelected.getmPosterPath();
 
@@ -90,9 +105,10 @@ public class MovieDetail extends AppCompatActivity {
 
         //initializing views
         title_tv.setText(movieSelected.getmTitle());
-        date_tv.setText(movieSelected.getmReleaseDate());
+        date_tv.setText(dateFormat.format(yearDate));
         plot_tv.setText(movieSelected.getmOverview());
-        vote_tv.setText(String.valueOf(movieSelected.getmVoteAverage()));
+        String averageVotes = String.valueOf(movieSelected.getmVoteAverage()) + "/10";
+        vote_tv.setText(averageVotes);
         Picasso.with(this).load(full_img_url).into(poster_iv);
 
         play_img_view.setOnClickListener(new View.OnClickListener() {

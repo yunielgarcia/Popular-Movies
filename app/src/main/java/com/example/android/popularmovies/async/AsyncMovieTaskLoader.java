@@ -18,7 +18,7 @@ import java.util.ArrayList;
  * Created by ygarcia on 5/19/2017.
  */
 
-public class AsyncMovieTaskLoader extends AsyncTaskLoader<ArrayList<Film>>{
+public class AsyncMovieTaskLoader extends AsyncTaskLoader<ArrayList<Film>> {
 
     private String mSortOption;
     private ArrayList<Film> mData;
@@ -46,7 +46,7 @@ public class AsyncMovieTaskLoader extends AsyncTaskLoader<ArrayList<Film>>{
                 @Override
                 public void onReceive(Context context, Intent intent) {
                     dataSourceChange = true;
-                    if (intent.hasExtra(SELECTED_OPTION)){
+                    if (intent.hasExtra(SELECTED_OPTION)) {
                         String option = intent.getStringExtra(SELECTED_OPTION);
                         mSortOption = option;
                     }

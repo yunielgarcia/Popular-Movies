@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="detail_left_margin">30dp</dimen>
+    <dimen name="detail_top_margin">10dp</dimen>
+    <dimen name="detail_right_margin">30dp</dimen>
+    <dimen name="detail_bottom_margin">10dp</dimen>
+</resources>

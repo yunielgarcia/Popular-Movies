@@ -40,12 +40,13 @@ public class ReviewAdapter extends ArrayAdapter<Review>{
         // Find the TextView in the list_item.xml layout with the ID version_name
         TextView authorTextView = (TextView) listItemView.findViewById(R.id.author_review_list_item);
         // set this text on the name TextView
-        authorTextView.setText(currentReview.getAuthor());
+        String authorStringLabel = currentReview.getAuthor() + ":";
+        authorTextView.setText(authorStringLabel);
 
         // Find the TextView in the list_item.xml layout with the ID version_number
         TextView contentTextView = (TextView) listItemView.findViewById(R.id.content_review_list_item);
-        // Get the miwok word from the current Word object and
-        // set this text on the miwok TextView
+        // Get the review from the current review object and
+        // set this text on the review TextView
         contentTextView.setText(currentReview.getContent());
 
         return listItemView;

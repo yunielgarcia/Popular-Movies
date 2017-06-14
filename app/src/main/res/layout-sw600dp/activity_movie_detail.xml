@@ -36,10 +36,10 @@
                 android:layout_marginLeft="@dimen/detail_left_margin"
                 android:layout_marginTop="@dimen/detail_top_margin"
                 android:adjustViewBounds="true"
-                android:maxHeight="210dp"
-                android:maxWidth="150dp"
+                android:maxHeight="250dp"
+                android:maxWidth="190dp"
                 tools:layout_height="210dp"
-                tools:layout_width="150dp"/>
+                tools:layout_width="150dp" />
 
             <!--date-->
             <TextView
@@ -54,13 +54,26 @@
                 android:textSize="20sp"
                 tools:text="2017" />
 
+            <!--plot-->
+            <TextView
+                android:id="@+id/tv_plot"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tv_detail_date"
+                android:layout_marginBottom="@dimen/detail_bottom_margin"
+                android:layout_marginLeft="@dimen/detail_left_margin"
+                android:layout_marginRight="@dimen/detail_right_margin"
+                android:layout_marginTop="@dimen/detail_top_margin"
+                android:layout_toRightOf="@id/iv_detail_movie_poster"
+                tools:text="@string/plot_placeholder" />
+
             <!--votes-->
             <TextView
                 android:id="@+id/tv_detail_votes"
                 style="@style/detail_headers"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/tv_detail_date"
+                android:layout_below="@+id/tv_plot"
                 android:layout_marginLeft="@dimen/detail_left_margin"
                 android:layout_marginTop="@dimen/detail_top_margin"
                 android:layout_toRightOf="@id/iv_detail_movie_poster"
@@ -70,18 +83,18 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
+                android:layout_below="@+id/tv_plot"
                 android:layout_marginLeft="@dimen/detail_left_margin"
-                android:layout_toRightOf="@+id/iv_detail_movie_poster"
+                android:layout_toRightOf="@+id/tv_detail_votes"
                 android:orientation="horizontal">
 
                 <TextView
                     style="@style/detail_headers"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginRight="@dimen/detail_right_margin"
                     android:layout_marginTop="@dimen/detail_top_margin"
-                    android:text="@string/detail_trailer_label"
-                    android:layout_marginRight="@dimen/detail_right_margin"/>
+                    android:text="@string/detail_trailer_label" />
 
                 <ImageButton
                     android:id="@+id/play_trailer"
@@ -93,32 +106,22 @@
 
         </RelativeLayout>
 
-        <!--plot-->
-        <TextView
-            android:id="@+id/tv_plot"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/detail_left_margin"
-            android:layout_marginRight="@dimen/detail_right_margin"
-            android:layout_marginTop="@dimen/detail_top_margin"
-            tools:text="@string/plot_placeholder" />
-
         <!--divider-->
         <View
             android:layout_width="match_parent"
-            android:background="@color/light_grey"
+            android:layout_height="2dp"
             android:layout_marginLeft="@dimen/detail_left_margin"
             android:layout_marginRight="@dimen/detail_right_margin"
             android:layout_marginTop="@dimen/detail_top_margin"
-            android:layout_height="2dp"/>
+            android:background="@color/light_grey" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/detail_reviews_label"
             android:layout_marginLeft="@dimen/detail_left_margin"
             android:layout_marginTop="@dimen/detail_top_margin"
-            android:textSize="20sp"/>
+            android:text="@string/detail_reviews_label"
+            android:textSize="20sp" />
 
         <ListView
             android:id="@+id/reviews_list_view"
