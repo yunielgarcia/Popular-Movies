@@ -6,9 +6,13 @@
           <option name="url" value="https://github.com/yunielgarcia/BakingApp.git" />
           <option name="userName" value="" />
         </UrlAndUserName>
+        <UrlAndUserName>
+          <option name="url" value="https://github.com/googlesamples/android-testing.git" />
+          <option name="userName" value="" />
+        </UrlAndUserName>
       </list>
     </option>
-    <option name="cloneParentDir" value="C:\Users\ygarcia\Documents\Udacity-Intermediate\6-MediaPlayer" />
+    <option name="cloneParentDir" value="C:\Users\ygarcia\Documents\Udacity-Intermediate\8-Expresso" />
   </component>
   <component name="VcsApplicationSettings">
     <option name="PATCH_STORAGE_LOCATION" value="C:\Users\ygarcia\Documents\Udacity-Intermediate\Projects\BakingApp" />
