@@ -4,6 +4,7 @@
       <mapping pattern="MainActivityFragment" type="CLASS" />
       <mapping pattern="MainActivity" type="CLASS" />
       <mapping pattern="MainActivityFragmentd" type="JAVA" />
+      <mapping pattern="AndroidManifest" type="XML" />
     </extensionMap>
   </component>
 </application>
