@@ -14,9 +14,13 @@
           <option name="url" value="https://github.com/javimar/XYZ_Reader.git" />
           <option name="userName" value="" />
         </UrlAndUserName>
+        <UrlAndUserName>
+          <option name="url" value="https://github.com/chrisbanes/cheesesquare.git" />
+          <option name="userName" value="" />
+        </UrlAndUserName>
       </list>
     </option>
-    <option name="cloneParentDir" value="C:\Users\ygarcia\Downloads\AND-Projects-master\AND-Projects-master" />
+    <option name="cloneParentDir" value="C:\Users\ygarcia\Downloads" />
   </component>
   <component name="VcsApplicationSettings">
     <option name="PATCH_STORAGE_LOCATION" value="C:\Users\ygarcia\Documents\Udacity-Intermediate\Projects\BakingApp" />
