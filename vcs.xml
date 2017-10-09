@@ -22,6 +22,10 @@
           <option name="url" value="https://github.com/yunielgarcia/Popular-Movies.git" />
           <option name="userName" value="" />
         </UrlAndUserName>
+        <UrlAndUserName>
+          <option name="url" value="https://github.com/udacity/AdvancedAndroid_MyGarden.git" />
+          <option name="userName" value="" />
+        </UrlAndUserName>
       </list>
     </option>
     <option name="cloneParentDir" value="C:\Users\ygarcia\Downloads" />
